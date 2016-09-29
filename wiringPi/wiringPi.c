@@ -305,6 +305,49 @@ static int sysFds [64] =
   -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,
 } ;
 
+// sysMode:
+//	Save interrupt mode
+
+static int sysMode [64] =
+{
+  -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,
+  -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,
+  -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,
+  -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,
+} ;
+
+static char sysName[30][10] =
+{
+ "PA19", // GPIO 0
+ "PA16", // GPIO 1
+ "PA12", // GPIO 2
+ "PA11", // GPIO 3
+ "PA6",  // GPIO 4
+ "PA7",  // GPIO 5
+ "PA8",  // GPIO 6
+ "PA21", // GPIO 7
+ "PC3",  // GPIO 8
+ "PC1",  // GPIO 9
+ "PC0",  // GPIO 10
+ "PC2",  // GPIO 11
+ "PG8",  // GPIO 12
+ "PA9",  // GPIO 13
+ "PA13", // GPIO 14
+ "PA14", // GPIO 15
+ "PG9",  // GPIO 16
+ "PA1",  // GPIO 17
+ "PD14", // GPIO 18
+ "PA10", // GPIO 19
+ "PG6",  // GPIO 20
+ "PG7",  // GPIO 21
+ "PA3",  // GPIO 22
+ "PC4",  // GPIO 23
+ "PC7",  // GPIO 24
+ "PA2",  // GPIO 25
+ "PA20", // GPIO 26
+ "PA0"   // GPIO 27
+} ;
+
 // ISR Data
 
 static void (*isrFunctions [64])(void) ;
@@ -783,6 +826,7 @@ static int syspin [64] =
   -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,
 } ;
 
+#if 0
 static int edge [64] =
 {
   -1, -1, -1, -1, 4, -1, -1, 7,   //support the INT
@@ -792,6 +836,8 @@ static int edge [64] =
   -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,
   -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,
 } ;
+
+#endif
 
 static int pinToGpioR3 [64] =
 {
@@ -2571,9 +2617,10 @@ void digitalWriteByte (int value)
 
 int waitForInterrupt (int pin, int mS)
 {
-  int fd, x ;
-  uint8_t c ;
-  struct pollfd polls ;
+  int fd, x = 1 ;
+  int mode ;
+  uint8_t c1, c2 ;
+//  struct pollfd polls ;
 
   /**/ if (wiringPiMode == WPI_MODE_PINS)
     pin = pinToGpio [pin] ;
@@ -2583,6 +2630,32 @@ int waitForInterrupt (int pin, int mS)
   if ((fd = sysFds [pin]) == -1)
     return -2 ;
 
+/*********** OPI specific
+  GPIO of OPI don't have interrupt function.
+  poll function don't work.
+  So read periodically /sys/class/gpio_sw/PA1/data.
+  And change is judged.
+************/
+
+  mode = sysMode[pin];
+  lseek(fd,0,0);
+  read (fd,&c1,1);
+
+  while (1) {
+    lseek(fd,0,0);
+    read (fd,&c2,1);
+    if (mode == INT_EDGE_BOTH) {
+      if(c1 != c2) break;
+    } else if (mode == INT_EDGE_FALLING) {
+      if(c1 == 0x31 && c2 == 0x30) break;
+    } else if (mode == INT_EDGE_RISING) {
+      if(c1 == 0x30 && c2 == 0x31) break;
+    }
+    c1 = c2;
+    delay(10);
+  }
+
+#if 0
 // Setup poll structure
 
   polls.fd     = fd ;
@@ -2596,6 +2669,7 @@ int waitForInterrupt (int pin, int mS)
 //	A one character read appars to be enough.
 
   (void)read (fd, &c, 1) ;
+#endif
 
   return x ;
 }
@@ -2637,12 +2711,12 @@ static void *interruptHandler (void *arg)
 int wiringPiISR (int pin, int mode, void (*function)(void))
 {
   pthread_t threadId ;
-  const char *modeS ;
+//  const char *modeS ;
   char fName   [64] ;
-  char  pinS [8] ;
-  pid_t pid ;
-  int   count, i ;
-  char  c ;
+//  char  pinS [8] ;
+//  pid_t pid ;
+//  int   count, i ;
+//  char  c ;
   int   bcmGpioPin ;
 
   if ((pin < 0) || (pin > 63))
@@ -2667,8 +2741,10 @@ int wiringPiISR (int pin, int mode, void (*function)(void))
 			return -1;
 		}
 		
+#if 0
 		if(edge[bcmGpioPin]==-1)
 		return wiringPiFailure (WPI_FATAL, "wiringPiISR: pin not sunpprt on bananaPi (%d,%d)\n", pin,bcmGpioPin) ;
+#endif
 	}
 	/*end 2014.08.19*/
 	
@@ -2678,6 +2754,7 @@ int wiringPiISR (int pin, int mode, void (*function)(void))
 //	is a way that will work when we're running in "Sys" mode, as
 //	a non-root user. (without sudo)
 
+#if 0
   if (mode != INT_EDGE_SETUP)
   {
     /**/ if (mode == INT_EDGE_FALLING)
@@ -2710,23 +2787,31 @@ int wiringPiISR (int pin, int mode, void (*function)(void))
     else		// Parent, wait
       wait (NULL) ;
   }
+#endif
 
 // Now pre-open the /sys/class node - but it may already be open if
 //	we are in Sys mode...
 
   if (sysFds [bcmGpioPin] == -1)
   {
+#if 0
     sprintf (fName, "/sys/class/gpio/gpio%d/value", bcmGpioPin) ;
     if ((sysFds [bcmGpioPin] = open (fName, O_RDWR)) < 0)
+#endif
+    sprintf (fName, "/sys/class/gpio_sw/%s/data",sysName[bcmGpioPin]) ;
+    if ((sysFds [bcmGpioPin] = open (fName, O_RDONLY)) < 0)
       return wiringPiFailure (WPI_FATAL, "wiringPiISR: unable to open %s: %s\n", fName, strerror (errno)) ;
   }
 
+#if 0
 // Clear any initial pending interrupt
 
   ioctl (sysFds [bcmGpioPin], FIONREAD, &count) ;
   for (i = 0 ; i < count ; ++i)
     read (sysFds [bcmGpioPin], &c, 1) ;
+#endif
 
+  sysMode[bcmGpioPin] = mode;
   isrFunctions [pin] = function ;
 
   pthread_mutex_lock (&pinMutex) ;
