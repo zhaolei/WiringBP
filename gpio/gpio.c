@@ -496,7 +496,9 @@ void doExport (int argc, char *argv [])
 
   sprintf (fName, "/sys/class/gpio/gpio%d/edge", pin) ;
   changeOwner (argv [0], fName) ;
-
+  
+  sprintf (fName, "/sys/class/gpio/gpio%d/active_low", pin) ;
+  changeOwner (argv [0], fName) ;
 }
 
 
