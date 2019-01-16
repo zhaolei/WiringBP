@@ -26,17 +26,17 @@ DYN_VERS_MIN=0
 
 VERSION=$(DYN_VERS_MAJ).$(DYN_VERS_MIN)
 DESTDIR=/usr
-PREFIX=/local
+PREFIX?=/local
 
 STATIC=libwiringPi.a
 DYNAMIC=libwiringPi.so.$(VERSION)
 
 #DEBUG	= -g -O0
 DEBUG	= -O2
-CC	= gcc
+CC	?= gcc
 INCLUDE	= -I.
 DEFS	= -D_GNU_SOURCE
-CFLAGS	= $(DEBUG) $(DEFS) -Wformat=2 -Wall -Winline $(INCLUDE) -pipe -fPIC
+CFLAGS	+= $(DEBUG) $(DEFS) -Wformat=2 -Wall -Winline $(INCLUDE) -pipe -fPIC
 
 LIBS    =
 
@@ -47,7 +47,7 @@ SRC	=	wiringPi.c						\
 		wiringSerial.c wiringShift.c				\
 		piHiPri.c piThread.c					\
 		wiringPiSPI.c wiringPiI2C.c				\
-		softPwm.c softTone.c					\
+		softPwm.c softTone.c softServo.c					\
 		mcp23008.c mcp23016.c mcp23017.c			\
 		mcp23s08.c mcp23s17.c					\
 		sr595.c							\
@@ -72,6 +72,7 @@ $(STATIC):	$(OBJ)
 $(DYNAMIC):	$(OBJ)
 	@echo "[Link (Dynamic)]"
 	@$(CC) -shared -Wl,-soname,libwiringPi.so -o libwiringPi.so.$(VERSION) -lpthread $(OBJ)
+	@chmod -x $@
 
 .c.o:
 	@echo [Compile] $<
@@ -97,6 +98,7 @@ install-headers:
 	@install -m 0644 wiringShift.h		$(DESTDIR)$(PREFIX)/include
 	@install -m 0644 softPwm.h		$(DESTDIR)$(PREFIX)/include
 	@install -m 0644 softTone.h		$(DESTDIR)$(PREFIX)/include
+	@install -m 0644 softServo.h		$(DESTDIR)$(PREFIX)/include
 	@install -m 0644 wiringPiSPI.h		$(DESTDIR)$(PREFIX)/include
 	@install -m 0644 wiringPiI2C.h		$(DESTDIR)$(PREFIX)/include
 	@install -m 0644 drcSerial.h		$(DESTDIR)$(PREFIX)/include
@@ -119,16 +121,16 @@ install-headers:
 .PHONEY:	install
 install:	$(DYNAMIC) install-headers
 	@echo "[Install Dynamic Lib]"
-	@install -m 0755 -d						$(DESTDIR)$(PREFIX)/lib
-	@install -m 0755 libwiringPi.so.$(VERSION)			$(DESTDIR)$(PREFIX)/lib/libwiringPi.so.$(VERSION)
-	@ln -sf $(DESTDIR)$(PREFIX)/lib/libwiringPi.so.$(VERSION)	$(DESTDIR)/lib/libwiringPi.so
-	@ldconfig
+	@install -m 0755 -d						$(DESTDIR)$(PREFIX)/lib$(LIBARCH)
+	@install -m 0644 libwiringPi.so.$(VERSION)			$(DESTDIR)$(PREFIX)/lib$(LIBARCH)/libwiringPi.so.$(VERSION)
+	@ln -sfr $(DESTDIR)$(PREFIX)/lib$(LIBARCH)/libwiringPi.so.$(VERSION)	$(DESTDIR)$(PREFIX)/lib$(LIBARCH)/libwiringPi.so
+	-@ldconfig
 
 .PHONEY:	install-static
 install-static:	$(STATIC) install-headers
 	@echo "[Install Static Lib]"
-	@install -m 0755 -d			$(DESTDIR)$(PREFIX)/lib
-	@install -m 0755 libwiringPi.a		$(DESTDIR)$(PREFIX)/lib
+	@install -m 0755 -d			$(DESTDIR)$(PREFIX)/lib$(LIBARCH)
+	@install -m 0644 libwiringPi.a		$(DESTDIR)$(PREFIX)/lib$(LIBARCH)
 
 .PHONEY:	uninstall
 uninstall:
@@ -138,6 +140,7 @@ uninstall:
 	@rm -f $(DESTDIR)$(PREFIX)/include/wiringShift.h
 	@rm -f $(DESTDIR)$(PREFIX)/include/softPwm.h
 	@rm -f $(DESTDIR)$(PREFIX)/include/softTone.h
+	@rm -f $(DESTDIR)$(PREFIX)/include/softServo.h
 	@rm -f $(DESTDIR)$(PREFIX)/include/wiringPiSPI.h
 	@rm -f $(DESTDIR)$(PREFIX)/include/wiringPiI2C.h
 	@rm -f $(DESTDIR)$(PREFIX)/include/drcSerial.h
@@ -156,7 +159,7 @@ uninstall:
 	@rm -f $(DESTDIR)$(PREFIX)/include/pcf8574.h
 	@rm -f $(DESTDIR)$(PREFIX)/include/pcf8591.h
 	@rm -f $(DESTDIR)$(PREFIX)/include/sn3218.h
-	@rm -f $(DESTDIR)$(PREFIX)/lib/libwiringPi.*
+	@rm -f $(DESTDIR)$(PREFIX)/lib$(LIBARCH)/libwiringPi.*
 	@ldconfig
 
 
@@ -175,6 +178,7 @@ wiringPiSPI.o: wiringPi.h wiringPiSPI.h
 wiringPiI2C.o: wiringPi.h wiringPiI2C.h
 softPwm.o: wiringPi.h softPwm.h
 softTone.o: wiringPi.h softTone.h
+softServo.o: wiringPi.h softServo.h
 mcp23008.o: wiringPi.h wiringPiI2C.h mcp23x0817.h mcp23008.h
 mcp23016.o: wiringPi.h wiringPiI2C.h mcp23016.h mcp23016reg.h
 mcp23017.o: wiringPi.h wiringPiI2C.h mcp23x0817.h mcp23017.h

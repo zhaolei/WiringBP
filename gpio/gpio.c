@@ -315,6 +315,7 @@ static void doI2Cdetect (int argc, char *argv [])
 		  return ;
 		}
 
+#if 0
 		if (!moduleLoaded ("i2c-sunxi"))
 		{
 		  fprintf (stderr, "%s: The I2C kernel module(s) are not loaded.\n", argv [0]) ;
@@ -322,6 +323,8 @@ static void doI2Cdetect (int argc, char *argv [])
 		}
 
 		sprintf (command, "%s -y %d", I2CDETECT, 2) ;
+#endif
+		sprintf (command, "%s -y %d", I2CDETECT, 0) ;
 		if (system (command) < 0)
 		  fprintf (stderr, "%s: Unable to run i2cdetect: %s\n", argv [0], strerror (errno)) ;
 	}
@@ -501,7 +504,7 @@ void doExport (int argc, char *argv [])
 
   sprintf (fName, "/sys/class/gpio/gpio%d/edge", pin) ;
   changeOwner (argv [0], fName) ;
-  
+
   sprintf (fName, "/sys/class/gpio/gpio%d/active_low", pin) ;
   changeOwner (argv [0], fName) ;
 }
@@ -603,6 +606,9 @@ void doEdge (int argc, char *argv [])
     exit (1) ;
   }
 
+  fprintf (fd, "none\n") ;
+  fclose (fd) ;
+  fd = fopen (fName, "w") ;
   fprintf (fd, "in\n") ;
   fclose (fd) ;
 
@@ -613,6 +619,10 @@ void doEdge (int argc, char *argv [])
     exit (1) ;
   }
 
+  // Always reset mode to "none" before setting a new mode
+  fprintf (fd, "none\n") ;
+  fclose (fd) ;
+  fd = fopen (fName, "w") ;
   /**/ if (strcasecmp (mode, "none")    == 0) fprintf (fd, "none\n") ;
   else if (strcasecmp (mode, "rising")  == 0) fprintf (fd, "rising\n") ;
   else if (strcasecmp (mode, "falling") == 0) fprintf (fd, "falling\n") ;

@@ -24,13 +24,13 @@
 #################################################################################
 
 DESTDIR=/usr
-PREFIX=/local
+PREFIX?=/local
 
 #DEBUG	= -g -O0
 DEBUG	= -O2
-CC	= gcc
+CC	?= gcc
 INCLUDE	= -I$(DESTDIR)$(PREFIX)/include
-CFLAGS	= $(DEBUG) -Wall $(INCLUDE) -Winline -pipe
+CFLAGS	+= $(DEBUG) -Wall $(INCLUDE) -Winline -pipe
 
 LDFLAGS	= -L$(DESTDIR)$(PREFIX)/lib
 LIBS    = -lwiringPi -lwiringPiDev -lpthread -lm
@@ -65,11 +65,9 @@ tags:	$(SRC)
 .PHONY:	install
 install:
 	@echo "[Install]"
-	@cp gpio		$(DESTDIR)$(PREFIX)/bin
-	@chown root.root	$(DESTDIR)$(PREFIX)/bin/gpio
-	@chmod 4755		$(DESTDIR)$(PREFIX)/bin/gpio
-	@mkdir -p		$(DESTDIR)$(PREFIX)/man/man1
-	@cp gpio.1		$(DESTDIR)$(PREFIX)/man/man1
+	@install -m 0755 -d	$(DESTDIR)$(PREFIX)/bin $(DESTDIR)$(PREFIX)/man/man1
+	@install -m 4755 -o root -g root gpio	$(DESTDIR)$(PREFIX)/bin
+	@install -m 0644 gpio.1		$(DESTDIR)$(PREFIX)/man/man1
 
 .PHONY:	uninstall
 uninstall:

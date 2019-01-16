@@ -291,13 +291,13 @@ static pthread_mutex_t pinMutex ;
 
 // Debugging & Return codes
 
-int wiringPiDebug       = FALSE ;
+int wiringPiDebug       = FALSE;  // guenter FALSE ;
 int wiringPiReturnCodes = FALSE ;
 
 // sysFds:
 //	Map a file descriptor from the /sys/class/gpio/gpioX/value
 
-static int sysFds [64] =
+static int sysFds [300] =
 {
   -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,
   -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,
@@ -621,7 +621,7 @@ static int *physToPin ;
 
 static int upDnConvert[3] = {0, 2, 1};
 
-static int pinToGpio_BP [64] =
+/* guenter static int pinToGpio_BP [64] =
 {
   275,259,
  274,273,
@@ -642,10 +642,42 @@ static int pinToGpio_BP [64] =
 
  -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, // ... 47
   -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,// ... 63
-} ;
+} ; guenter ende */ 
 
+// WiringPiNr. gegeben .. -> Array GPIOx orange pi guenter neu
+// A ab 0x00, B ab 0x20, C ab 0x40, D ab 0x50 ......
+// 00 - 31 = PA00-PA31
+// 32 - 63 = PB00-PB31
+// 64 - 95 = PC00-PC31
+static int pinToGpio_BP [64] =
+{
+  1,110,    // 0, 1
+   0,  3,    // 2, 3
+  68, 71,    // 4  5
+   2,  6,    // 6, 7
+  12, 11,    // 8, 9
+  67, 21,    //10,11
+  64, 65,    //12,13
+  66, 13,    //14,15
+  14, -1,    //16,17
+  -1, -1,    //18,19
+  -1,  7,    //20,21
+   8,  9,    //22,23
+  10, 20,    //24,25
+ 200,201,    //26,27
+ 198,199,    //28,29
+  19, 18,    //30,31
+
+ -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, // ... 47
+  -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,// ... 63
+} ;
+// guenter neu ende
+
+
+// guenter ... dieses braucht nicht umgewandelt werden, da kein /sys/class/gpio auf orange pi
 static int pinTobcm_BP [64] =
 {
+#if 0
  257,256,   //map to BCM GPIO0,1
  53,52,       //map to BCM GPIO2,3
  226,35,     //map to BCM GPIO4,5
@@ -660,11 +692,28 @@ static int pinTobcm_BP [64] =
  273,244,    //map to BCM GPIO22,23
  245,272,    //map to BCM GPIO24,25
  37, 274,     //map to BCM GPIO26,27
+#endif
+
+ 19, 18,    //map to BCM GPIO0,1
+ 12, 11,    //map to BCM GPIO2,3
+  6,  7,    //map to BCM GPIO4,5
+  8, 21,    //map to BCM GPIO6,7
+ 67, 65,    //map to BCM GPIO8,9
+ 64, 66,    //map to BCM GPIO10,11
+200,  9,    //map to BCM GPIO12,13
+ 13, 14,    //map to BCM GPIO14,15
+201,  1,    //map to BCM GPIO16,17
+110, 10,    //map to BCM GPIO18,19
+198,199,    //map to BCM GPIO20,21
+  3, 68,    //map to BCM GPIO22,23
+ 71,  2,    //map to BCM GPIO24,25
+ 20,  0,    //map to BCM GPIO26,27
  
   -1,-1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,  // 29... 44
   -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, //45... 60
   -1, -1, -1, -1                                                                   // ...63
 } ;
+/* guenter 
 static int physToGpio_BP [64] =
 {
   -1,          // 0
@@ -691,6 +740,37 @@ static int physToGpio_BP [64] =
    -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, //41-> 55
    -1, -1, -1, -1, -1, -1, -1, -1 // 56-> 63
 } ;
+guenter ende */
+
+//guenter anfang 
+static int physToGpio_BP [64] =
+{
+  -1,          // 0
+  -1,    -1,   // 1, 2
+  12,    -1,   // 3, 4
+  11,    -1,   // 5, 6
+   6,    13,   // 7, 8
+  -1,    14,   // 9, 10
+   1,   110,   //11, 12
+   0,    -1,   //13, 14
+   3,    68,   //15, 16
+  -1,    71,   //17, 18
+  64,    -1,   //19, 20
+  65,     2,   //21, 22
+  66,    67,   //23, 24
+  -1,    21,   //25, 26
+  19,    18,   //27, 28
+   7,    -1,   //29, 30
+   8,   200,   //31, 32
+   9,    -1,   //33, 34
+  10,   201,   //35, 36
+  20,   198,   //37, 38
+  -1,   199,   //39, 40
+   -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, //41-> 55
+   -1, -1, -1, -1, -1, -1, -1, -1 // 56-> 63
+} ;
+// guenter ende
+
 
 
 static int syspin [64] =
@@ -791,6 +871,7 @@ static int physToPinR3 [64] = //return wiringPI pin
   -1, -1, -1, -1, -1, -1, -1, 	// ... 63
 } ;
 
+/* guenter raus
 static int BP_PIN_MASK[9][32] =  //[BANK]  [INDEX]
 {
  {-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,},//PA
@@ -803,6 +884,24 @@ static int BP_PIN_MASK[9][32] =  //[BANK]  [INDEX]
  {-1,-1,  2,-1, 4,  5,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,20,21,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,},//PH
  {0,1,-1,3,-1,-1,-1,-1,-1,-1,10,11,12,13,14,-1,16,17,18,19,20,21,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,},//PI
 };
+ guenter ende */ 
+
+// guenter anfang ... welche pins werden freigegeben .. -1 = gesperrt
+static int BP_PIN_MASK[9][32] =  //[BANK]  [INDEX]
+{
+ { 0, 1, 2, 3,-1,-1, 6, 7, 8, 9,10,11,12,13,14,-1,-1,-1,18,19,20,21,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,},//PA
+ {-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,},//PB
+ { 0, 1, 2, 3, 4,-1,-1, 7,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,},//PC
+ {-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,14,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,},//PD
+ {-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,},//PE
+ {-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,},//PF
+ {-1,-1,-1,-1,-1,-1, 6, 7, 8, 9,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,},//PG
+ {-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,},//PH
+ {-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,},//PI
+};
+// guenter ende
+
+
 static int version=0;
 static int pwmmode=0;
 
@@ -950,7 +1049,7 @@ int sunxi_get_gpio_mode(int pin)
 			regval = readl(phyaddr);
 			if (wiringPiDebug)
 				printf("read reg val: 0x%x offset:%d  return: %d\n",regval,offset,reval);
-			//reval=regval &(reval+(7 << offset));
+			// reval=regval &(reval+(7 << offset));
 			reval=(regval>>offset)&7;
 			if (wiringPiDebug)
 				printf("read reg val: 0x%x offset:%d  return: %d\n",regval,offset,reval);
@@ -962,6 +1061,7 @@ int sunxi_get_gpio_mode(int pin)
 		return reval;
 	 } 
 }
+
 void sunxi_set_gpio_mode(int pin,int mode)
 {
  uint32_t regval = 0;
@@ -1027,6 +1127,7 @@ void sunxi_set_gpio_mode(int pin,int mode)
 
 	return ;
 }
+
 void sunxi_digitalWrite(int pin, int value)
 { 
 	 uint32_t regval = 0;
@@ -1061,32 +1162,34 @@ void sunxi_digitalWrite(int pin, int value)
 	 {
 		printf("pin number error\n");
 	 }
-	 
+
 	 return ;
 }
+
 int sunxi_digitalRead(int pin)
-{ 
-	 uint32_t regval = 0;
-	 int bank = pin >> 5;
-	 int index = pin - (bank << 5);
-	 uint32_t phyaddr = SUNXI_GPIO_BASE + (bank * 36) + 0x10; // +0x10 -> data reg
-	   if (wiringPiDebug)
-			printf("func:%s pin:%d,bank:%d index:%d phyaddr:0x%x\n",__func__, pin,bank,index,phyaddr); 
-	 if(BP_PIN_MASK[bank][index] != -1)
-	 {
-	  regval = readl(phyaddr);
-	  regval = regval >> index;
-	  regval &= 1;
+{
+	uint32_t regval = 0;
+	int bank = pin >> 5;
+	int index = pin - (bank << 5);
+	uint32_t phyaddr = SUNXI_GPIO_BASE + (bank * 36) + 0x10; // +0x10 -> data reg
+	if (wiringPiDebug)
+			printf("func:%s pin:%d,bank:%d index:%d phyaddr:0x%x\n",__func__, pin,bank,index,phyaddr);
+	if(BP_PIN_MASK[bank][index] != -1)
+	{
+		regval = readl(phyaddr);
+		regval = regval >> index;
+		regval &= 1;
 		if (wiringPiDebug)
 			printf("***** read reg val: 0x%x,bank:%d,index:%d,line:%d\n",regval,bank,index,__LINE__);
-	  return regval;
-	 }
-	 else
-	 {
-	  printf("pin number error\n");
-	  return regval;
-	 } 
+	 	return regval;
+	}
+	else
+	{
+		printf("Sunxi_digitalRead() pin - number error\n");
+		return regval;
+	}
 }
+
 void sunxi_pullUpDnControl (int pin, int pud)
 {
 	 uint32_t regval = 0;
@@ -1213,7 +1316,7 @@ int isA20(void)
   if (wiringPiDebug)
     printf ("piboardRev: Hardware string: %s\n", line) ;
 	
-	if (strstr(line,"sun7i") != NULL)
+	if (strstr(line,"sun7i") != NULL)			
 	{
 		if (wiringPiDebug)
 		printf ("Hardware:%s\n",line) ;
@@ -1228,6 +1331,50 @@ int isA20(void)
 }
 /*end 2014.09.18*/
 
+
+
+/*add for H3 guenter*/
+int isH3(void)
+{
+  FILE *cpuFd ;
+  char line [120] ;
+  char *d;
+	if ((cpuFd = fopen ("/proc/cpuinfo", "r")) == NULL)
+		piBoardRevOops ("Unable to open /proc/cpuinfo") ;
+	  while (fgets (line, 120, cpuFd) != NULL)
+		{
+			if (strncmp (line, "Hardware", 8) == 0)
+			break ;
+		}
+		
+	fclose (cpuFd) ;
+	if (strncmp (line, "Hardware", 8) != 0)
+		piBoardRevOops ("No \"Hardware\" line") ;
+	
+  for (d = &line [strlen (line) - 1] ; (*d == '\n') || (*d == '\r') ; --d)
+    *d = 0 ;
+  if (wiringPiDebug)
+    printf ("piboardRev: Hardware string: %s\n", line) ;
+	
+	if (strstr(line,"sun8i") != NULL)			//guenter von sun7i auf sun8i
+	{
+		if (wiringPiDebug)
+		printf ("Hardware:%s\n",line) ;
+		return 1 ;
+	}
+	else
+	{
+		if (wiringPiDebug)
+		printf ("Hardware:%s\n",line) ;
+		return 0 ;
+	}
+}
+/* guenter ende */
+
+
+
+
+
 int piBoardRev (void)
 {
   FILE *cpuFd ;
@@ -1235,8 +1382,8 @@ int piBoardRev (void)
   char *c ;
   static int  boardRev = -1 ;
 
-/*add for BananaPro by LeMaker team*/
-  if(isA20())
+/*add for orange pi guenter */
+  if(isH3())			//guenter if(isA20())
   {
 	version = BPRVER;
 		if (wiringPiDebug)
@@ -1396,7 +1543,7 @@ void piBoardId (int *model, int *rev, int *mem, int *maker, int *overVolted)
 
 int wpiPinToGpio (int wpiPin)
 {
-  return pinToGpio [wpiPin & 63] ;
+  return pinToGpio_BP [wpiPin & 63] ;
 }
 
 
@@ -1409,7 +1556,7 @@ int wpiPinToGpio (int wpiPin)
 
 int physPinToGpio (int physPin)
 {
-  return physToGpio [physPin & 63] ;
+  return physToGpio_BP [physPin & 63] ;
 }
 
 /*
@@ -1468,17 +1615,19 @@ int getAlt (int pin)
    /*add for BananaPro by LeMaker team*/
 	if(BPRVER == version)
 	{
+
+		//printf("[%s:L%d] the pin:%d  mode: %d is invaild,please check it over!\n", __func__,  __LINE__, pin, wiringPiMode);
 		if (wiringPiMode == WPI_MODE_PINS)
 			pin = pinToGpio_BP [pin] ;
 		else if (wiringPiMode == WPI_MODE_PHYS)
 			pin = physToGpio_BP[pin] ;
-		else if (wiringPiMode == WPI_MODE_GPIO)
+		else if (wiringPiMode == WPI_MODE_GPIO) 
 			pin=pinTobcm_BP[pin];//need map A20 to bcm
 		else return 0 ;
 
 		if(-1 == pin)
 		{
-			printf("[%s:L%d] the pin:%d is invaild,please check it over!\n", __func__,  __LINE__, pin);
+			printf("[%s:L%d] the pin:%d  mode: %d is invaild,please check it over!\n", __func__,  __LINE__, pin, wiringPiMode);
 			return -1;
 		}
 		alt=sunxi_get_gpio_mode(pin);
@@ -1730,7 +1879,7 @@ struct wiringPiNodeStruct *wiringPiNewNode (int pinBase, int numPins)
 
 void pinEnableED01Pi (int pin)
 {
-  pin = pinToGpio [pin & 63] ;
+  pin = pinToGpio_BP [pin & 63] ;
 }
 #endif
 
@@ -1989,15 +2138,15 @@ int digitalRead (int pin)
 {
   char c ;
   struct wiringPiNodeStruct *node = wiringPiNodes ;
-	
+
 	/*add for BananaPro by LeMaker team*/
 	if(BPRVER == version)
 	{
 		if ((pin & PI_GPIO_MASK) == 0)		// On-Board Pin
 			  {
+				int _pinMode = getAlt(pin);
 				 if (wiringPiMode == WPI_MODE_GPIO_SYS)	// Sys mode
 				{
-					
 					if(pin==0)
 					{
 						//printf("%d %s,%d invalid pin,please check it over.\n",pin,__func__, __LINE__);
@@ -2008,17 +2157,17 @@ int digitalRead (int pin)
 						//printf("%d %s,%d invalid pin,please check it over.\n",pin,__func__, __LINE__);
 						return 0;
 					}
-					  if (sysFds [pin] == -1)
+					if (sysFds [pin] == -1)
 						{
 							if (wiringPiDebug)
 								printf ("pin %d sysFds -1.%s,%d\n", pin ,__func__, __LINE__) ;
-							return LOW ;
+							return LOW;
 						}
-						if (wiringPiDebug)
-								printf ("pin %d :%d.%s,%d\n", pin ,sysFds [pin],__func__, __LINE__) ;
-					  lseek  (sysFds [pin], 0L, SEEK_SET) ;
-					  read   (sysFds [pin], &c, 1) ;
-					  return (c == '0') ? LOW : HIGH ;
+					if (wiringPiDebug)
+						printf ("pin %d :%d.%s,%d\n", pin ,sysFds [pin],__func__, __LINE__) ;
+					lseek  (sysFds [pin], 0L, SEEK_SET) ;
+					read   (sysFds [pin], &c, 1) ;
+					return (c == '0') ? LOW : HIGH ;
 				}
 				else if (wiringPiMode == WPI_MODE_PINS)
 					pin = pinToGpio_BP [pin] ;
@@ -2026,11 +2175,36 @@ int digitalRead (int pin)
 					pin = physToGpio_BP[pin] ;
 				else if (wiringPiMode == WPI_MODE_GPIO)
 					pin=pinTobcm_BP[pin];//need map A20 to bcm
-				else 
+				else
 				  return LOW ;
-				 if(-1 == pin){
-					printf("[%s:L%d] the pin:%d is invaild,please check it over!\n", __func__,  __LINE__, pin);
+				if(-1 == pin){
+					printf("[%s:L%d] the pin:%d is invalid, please check it over!\n", __func__,  __LINE__, pin);
 					return LOW;
+					}
+				if(_pinMode == 6){
+					// -- Allwinner H3 --
+					//ALT2, ie. EINT is enabled!
+					//Gotta export the pin if it's not exported already, then read its value that way
+					char fName[64];
+					struct stat s;
+					sprintf(fName, "/sys/class/gpio/gpio%d", pin);
+					if(stat(fName, &s) == -1) {
+						int tempFd = open("/sys/class/gpio/export", O_WRONLY);
+						if(tempFd < 0) return LOW;
+						sprintf(fName, "%d\n", pin);
+						write(tempFd, fName, strlen(fName));
+						close(tempFd);
+						}
+					sprintf(fName, "/sys/class/gpio/gpio%d/value", pin);
+					if(sysFds[pin] == -1){
+						if ((sysFds[pin] = open (fName, O_RDWR)) < 0){
+							printf("digitalRead(): Failed to open %s, pin not exported?\n", fName);
+							return LOW;
+							}
+						}
+					lseek(sysFds[pin], 0L, SEEK_SET);
+					read(sysFds[pin], &c, 1);
+					return (c == '0') ? LOW : HIGH;
 					}
 				return sunxi_digitalRead(pin);
 			  }
@@ -2042,7 +2216,7 @@ int digitalRead (int pin)
 		  }
 	  }
 	/*end 2014.08.19*/
-	
+
   if ((pin & PI_GPIO_MASK) == 0)		// On-Board Pin
   {
     /**/ if (wiringPiMode == WPI_MODE_GPIO_SYS)	// Sys mode
@@ -2429,9 +2603,9 @@ int waitForInterrupt (int pin, int mS)
   struct pollfd polls ;
 
   /**/ if (wiringPiMode == WPI_MODE_PINS)
-    pin = pinToGpio [pin] ;
+    pin = pinToGpio_BP [pin] ;
   else if (wiringPiMode == WPI_MODE_PHYS)
-    pin = physToGpio [pin] ;
+    pin = physToGpio_BP [pin] ;
 
   if ((fd = sysFds [pin]) == -1)
     return -2 ;
@@ -2504,9 +2678,9 @@ int wiringPiISR (int pin, int mode, void (*function)(void))
   /**/ if (wiringPiMode == WPI_MODE_UNINITIALISED)
     return wiringPiFailure (WPI_FATAL, "wiringPiISR: wiringPi has not been initialised. Unable to continue.\n") ;
   else if (wiringPiMode == WPI_MODE_PINS)
-    bcmGpioPin = pinToGpio [pin] ;
+    bcmGpioPin = pinToGpio_BP [pin] ;
   else if (wiringPiMode == WPI_MODE_PHYS)
-    bcmGpioPin = physToGpio [pin] ;
+    bcmGpioPin = physToGpio_BP [pin] ;
   else
     bcmGpioPin = pin ;
 
@@ -2516,12 +2690,16 @@ int wiringPiISR (int pin, int mode, void (*function)(void))
 	{
 		if(-1 == bcmGpioPin)  /**/
 		{
-			printf("[%s:L%d] the pin:%d is invaild,please check it over!\n", __func__,  __LINE__, pin);
+			printf("[%s:L%d] the pin:%d is invalid, please check it over!\n", __func__,  __LINE__, pin);
 			return -1;
 		}
-		
-		if(edge[bcmGpioPin]==-1)
-		return wiringPiFailure (WPI_FATAL, "wiringPiISR: pin not sunpprt on bananaPi (%d,%d)\n", pin,bcmGpioPin) ;
+		if(isH3()){
+			// All PA- and PG-pins support interrupts, the others don't
+			if(bcmGpioPin > 31 && bcmGpioPin < 192)
+				return wiringPiFailure (WPI_FATAL, "wiringPiISR: the specified pin does not support interrupts on this board (Allwinner H3) (%d,%d)\n", pin,bcmGpioPin) ;
+		}
+		else if(edge[bcmGpioPin]==-1)
+			return wiringPiFailure (WPI_FATAL, "wiringPiISR: pin not supported on Banana Pi (%d,%d)\n", pin,bcmGpioPin) ;
 	}
 	/*end 2014.08.19*/
 	
@@ -2729,6 +2907,7 @@ int wiringPiSetup (void)
   int   fd ;
   int   boardRev ;
   int   model, rev, mem, maker, overVolted ;
+  memset(&sysFds, -1, sizeof(int)*300); // Initialize the filedescriptor - table all to -1
 
   if (getenv (ENV_DEBUG) != NULL)
     wiringPiDebug = TRUE ;
@@ -2744,7 +2923,7 @@ int wiringPiSetup (void)
 
   boardRev = piBoardRev () ;
 	
-  if (BPRVER == boardRev)  /*modify for BananaPro by LeMaker team*/
+  if (BPRVER == boardRev)  /*modify for BananaPro by LeMaker team zhaolei*/
   {
   	 	pinToGpio =  pinToGpioR3 ;
 		physToGpio = physToGpioR3 ;

@@ -25,16 +25,16 @@ DYN_VERS_MIN=0
 
 VERSION=$(DYN_VERS_MAJ).$(DYN_VERS_MIN)
 DESTDIR=/usr
-PREFIX=/local
+PREFIX?=/local
 
 STATIC=libwiringPiDev.a
 DYNAMIC=libwiringPiDev.so.$(VERSION)
 
 #DEBUG	= -g -O0
 DEBUG	= -O2
-CC	= gcc
+CC	?= gcc
 INCLUDE	= -I.
-CFLAGS	= $(DEBUG) -Wformat=2 -Wall $(INCLUDE) -Winline -pipe -fPIC
+CFLAGS	+= $(DEBUG) -Wformat=2 -Wall $(INCLUDE) -Winline -pipe -fPIC
 
 LIBS    =
 
@@ -60,6 +60,7 @@ $(STATIC):	$(OBJ)
 $(DYNAMIC):	$(OBJ)
 	@echo "[Link (Dynamic)]"
 	@$(CC) -shared -Wl,-soname,libwiringPiDev.so -o libwiringPiDev.so.$(VERSION) -lpthread $(OBJ)
+	@chmod -x $@
 
 .c.o:
 	@echo [Compile] $<
@@ -92,16 +93,16 @@ install-headers:
 .PHONEY:	install
 install:	$(DYNAMIC) install-headers
 	@echo "[Install Dynamic Lib]"
-	@install -m 0755 -d						$(DESTDIR)$(PREFIX)/lib
-	@install -m 0755 libwiringPiDev.so.$(VERSION)			$(DESTDIR)$(PREFIX)/lib/libwiringPiDev.so.$(VERSION)
-	@ln -sf $(DESTDIR)$(PREFIX)/lib/libwiringPiDev.so.$(VERSION)	$(DESTDIR)/lib/libwiringPiDev.so
-	@ldconfig
+	@install -m 0755 -d						$(DESTDIR)$(PREFIX)/lib$(LIBARCH)
+	@install -m 0644 libwiringPiDev.so.$(VERSION)			$(DESTDIR)$(PREFIX)/lib$(LIBARCH)/libwiringPiDev.so.$(VERSION)
+	@ln -sf $(DESTDIR)$(PREFIX)/lib$(LIBARCH)/libwiringPiDev.so.$(VERSION)	$(DESTDIR)$(PREFIX)/lib$(LIBARCH)/libwiringPiDev.so
+	-@ldconfig
 
 .PHONEY:	install-static
 install-static:	$(STATIC) install-headers
 	@echo "[Install Static Lib]"
-	@install -m 0755 -d			$(DESTDIR)$(PREFIX)/lib
-	@install -m 0755 libwiringPiDev.a	$(DESTDIR)$(PREFIX)/lib
+	@install -m 0755 -d			$(DESTDIR)$(PREFIX)/lib$(LIBARCH)
+	@install -m 0644 libwiringPiDev.a	$(DESTDIR)$(PREFIX)/lib$(LIBARCH)
 
 .PHONEY:	uninstall
 uninstall:
@@ -114,7 +115,7 @@ uninstall:
 	@rm -f $(DESTDIR)$(PREFIX)/include/lcd128x64.h
 	@rm -f $(DESTDIR)$(PREFIX)/include/lcd.h
 	@rm -f $(DESTDIR)$(PREFIX)/include/piGlow.h
-	@rm -f $(DESTDIR)$(PREFIX)/lib/libwiringPiDev.*
+	@rm -f $(DESTDIR)$(PREFIX)/lib$(LIBARCH)/libwiringPiDev.*
 	@ldconfig
 
 

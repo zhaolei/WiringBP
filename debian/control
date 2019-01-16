@@ -1,0 +1,55 @@
+Source: wiringop
+Priority: optional
+Maintainer: Сергей Хлутчин <sercxjo@gmail.com>
+Build-Depends: debhelper (>= 9)
+Standards-Version: 3.9.5
+Section: libs
+Homepage: https://github.com/zhaolei/WiringOP
+Vcs-Git: https://github.com/zhaolei/WiringOP.git
+Vcs-Browser: https://github.com/zhaolei/WiringOP
+
+Package: libwiringop-dev
+Section: libdevel
+Architecture: any
+Depends: libwiringop2 (= ${binary:Version}), libwiringopdev2 (= ${binary:Version}), ${misc:Depends}
+Description: GPIO access library for OrangePi. Development files.
+ This is a modified WiringPi for OrangePi.
+ It is based on the original WiringPi for Raspberry Pi.
+ WiringPi is a GPIO access library written in C originally for the BCM2835 used in the Raspberry Pi.
+ It’s released under the GNU LGPLv3 license and is usable from C and C++
+ and many other languages with suitable wrappers.
+ It’s designed to be familiar to people who have used the Arduino “wiring” system.
+
+Package: libwiringop2
+Architecture: any
+Multi-Arch: same
+Pre-Depends: ${misc:Pre-Depends}
+Depends: ${shlibs:Depends}, ${misc:Depends}
+Description: GPIO access library for OrangePi. Dynamic library.
+ This is a modified WiringPi for OrangePi.
+ It is based on the original WiringPi for Raspberry Pi.
+ WiringPi is a GPIO access library written in C originally for the BCM2835 used in the Raspberry Pi.
+ It’s released under the GNU LGPLv3 license and is usable from C and C++
+ and many other languages with suitable wrappers.
+ It’s designed to be familiar to people who have used the Arduino “wiring” system.
+
+Package: libwiringopdev2
+Architecture: any
+Multi-Arch: same
+Pre-Depends: ${misc:Pre-Depends}
+Depends: ${shlibs:Depends}, ${misc:Depends}
+Description: WiringPi device library for OrangePi. Dynamic library.
+ This is a part of a modified WiringPi for OrangePi.
+ It is based on the original WiringPi for Raspberry Pi.
+ Dev Lib is a library of device drivers for some popular hardware devices.
+ These device drivers are not true device drivers in the Linux kernel terms,
+ but are C libraries to use the existing wiringPi library to access the hardware devices via simple to use APIs.
+
+Package: gpio
+Section: libdevel
+Architecture: any
+Depends: ${misc:Depends}
+Description: GPIO access Utility from the WiringPi library.
+ This is a part of a modified WiringPi for OrangePi.
+ gpio is an utility to acess GPIO using the WiringPi library.
+ It also is necessary for use interrupts with this library.
